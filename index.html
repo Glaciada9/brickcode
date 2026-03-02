@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrickCode ⚡</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#007acc">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="BrickCode">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-family: monospace;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #topbar {
+            background: #2d2d2d;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 2px solid #007acc;
+            flex-shrink: 0;
+        }
+
+        #topbar span {
+            font-size: 16px;
+            font-weight: bold;
+            color: #007acc;
+            letter-spacing: 2px;
+        }
+
+        #topbar .tabs {
+            display: flex;
+            gap: 5px;
+        }
+
+        .tab {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            border: 1px solid #444;
+            padding: 4px 10px;
+            border-radius: 4px 4px 0 0;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .tab.active {
+            background: #007acc;
+            color: white;
+            border-color: #007acc;
+        }
+
+        #main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        #emmet-bar {
+            background: #252526;
+            width: 110px;
+            overflow-y: auto;
+            padding: 8px 5px;
+            border-right: 1px solid #444;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+
+        #emmet-bar .section-title {
+            color: #007acc;
+            font-size: 10px;
+            text-transform: uppercase;
+            margin: 6px 0 2px 0;
+            padding-left: 3px;
+        }
+
+        .emmet-btn {
+            background: #2d2d2d;
+            color: #d4d4d4;
+            border: 1px solid #444;
+            border-radius: 4px;
+            padding: 5px 3px;
+            font-size: 11px;
+            cursor: pointer;
+            text-align: center;
+            transition: background 0.15s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .emmet-btn:active {
+            background: #007acc;
+            color: white;
+        }
+
+        #editor-zone {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #editor {
+            flex: 1;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            font-size: 13px;
+            font-family: monospace;
+            padding: 15px;
+            border: none;
+            outline: none;
+            resize: none;
+            line-height: 1.6;
+        }
+
+        #preview-zone {
+            display: none;
+            flex: 1;
+            flex-direction: column;
+            border-left: 2px solid #007acc;
+        }
+
+        #preview-zone.visible {
+            display: flex;
+        }
+
+        #preview-topbar {
+            background: #252526;
+            padding: 6px 10px;
+            font-size: 12px;
+            color: #888;
+            border-bottom: 1px solid #444;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        #preview-frame {
+            flex: 1;
+            border: none;
+            background: white;
+        }
+
+        #bottombar {
+            background: #007acc;
+            display: flex;
+            flex-shrink: 0;
+        }
+
+        #bottombar button {
+            flex: 1;
+            padding: 12px;
+            background: transparent;
+            color: white;
+            border: none;
+            font-size: 13px;
+            cursor: pointer;
+            font-family: monospace;
+            transition: background 0.15s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        #bottombar button:active {
+            background: #005a9e;
+        }
+
+        /* Install banner */
+        #install-banner {
+            display: none;
+            background: #007acc;
+            color: white;
+            padding: 8px 15px;
+            font-size: 12px;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        #install-banner button {
+            background: white;
+            color: #007acc;
+            border: none;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- INSTALL BANNER -->
+    <div id="install-banner">
+        <span>📲 Installer BrickCode sur ton écran d'accueil !</span>
+        <button onclick="installApp()">Installer</button>
+    </div>
+
+    <!-- TOPBAR -->
+    <div id="topbar">
+        <span>⚡ BrickCode</span>
+        <div class="tabs">
+            <div class="tab active" onclick="switchTab('editor')">📝 Éditeur</div>
+            <div class="tab" onclick="switchTab('split')">⚡ Split</div>
+        </div>
+    </div>
+
+    <!-- MAIN -->
+    <div id="main">
+
+        <!-- EMMET SIDEBAR -->
+        <div id="emmet-bar">
+            <div class="section-title">Base</div>
+            <button class="emmet-btn" onclick="insertEmmet('!')">!</button>
+            <button class="emmet-btn" onclick="insertEmmet('html')">html</button>
+            <button class="emmet-btn" onclick="insertEmmet('head')">head</button>
+            <button class="emmet-btn" onclick="insertEmmet('body')">body</button>
+
+            <div class="section-title">Texte</div>
+            <button class="emmet-btn" onclick="insertEmmet('h1')">h1</button>
+            <button class="emmet-btn" onclick="insertEmmet('h2')">h2</button>
+            <button class="emmet-btn" onclick="insertEmmet('h3')">h3</button>
+            <button class="emmet-btn" onclick="insertEmmet('p')">p</button>
+            <button class="emmet-btn" onclick="insertEmmet('span')">span</button>
+            <button class="emmet-btn" onclick="insertEmmet('strong')">strong</button>
+            <button class="emmet-btn" onclick="insertEmmet('em')">em</button>
+
+            <div class="section-title">Structure</div>
+            <button class="emmet-btn" onclick="insertEmmet('div')">div</button>
+            <button class="emmet-btn" onclick="insertEmmet('section')">section</button>
+            <button class="emmet-btn" onclick="insertEmmet('article')">article</button>
+            <button class="emmet-btn" onclick="insertEmmet('header')">header</button>
+            <button class="emmet-btn" onclick="insertEmmet('footer')">footer</button>
+            <button class="emmet-btn" onclick="insertEmmet('nav')">nav</button>
+            <button class="emmet-btn" onclick="insertEmmet('main')">main</button>
+            <button class="emmet-btn" onclick="insertEmmet('aside')">aside</button>
+
+            <div class="section-title">Listes</div>
+            <button class="emmet-btn" onclick="insertEmmet('ul')">ul</button>
+            <button class="emmet-btn" onclick="insertEmmet('ol')">ol</button>
+            <button class="emmet-btn" onclick="insertEmmet('li')">li</button>
+            <button class="emmet-btn" onclick="insertEmmet('dl')">dl</button>
+            <button class="emmet-btn" onclick="insertEmmet('dt')">dt</button>
+            <button class="emmet-btn" onclick="insertEmmet('dd')">dd</button>
+
+            <div class="section-title">Médias</div>
+            <button class="emmet-btn" onclick="insertEmmet('img')">img</button>
+            <button class="emmet-btn" onclick="insertEmmet('video')">video</button>
+            <button class="emmet-btn" onclick="insertEmmet('audio')">audio</button>
+            <button class="emmet-btn" onclick="insertEmmet('figure')">figure</button>
+            <button class="emmet-btn" onclick="insertEmmet('figcaption')">figcap.</button>
+            <button class="emmet-btn" onclick="insertEmmet('iframe')">iframe</button>
+            <button class="emmet-btn" onclick="insertEmmet('canvas')">canvas</button>
+            <button class="emmet-btn" onclick="insertEmmet('svg')">svg</button>
+
+            <div class="section-title">Formulaires</div>
+            <button class="emmet-btn" onclick="insertEmmet('form')">form</button>
+            <button class="emmet-btn" onclick="insertEmmet('input')">input</button>
+            <button class="emmet-btn" onclick="insertEmmet('input:text')">inp:txt</button>
+            <button class="emmet-btn" onclick="insertEmmet('input:email')">inp:mail</button>
+            <button class="emmet-btn" onclick="insertEmmet('input:password')">inp:pwd</button>
+            <button class="emmet-btn" onclick="insertEmmet('input:checkbox')">inp:chk</button>
+            <button class="emmet-btn" onclick="insertEmmet('input:radio')">inp:rad</button>
+            <button class="emmet-btn" onclick="insertEmmet('input:file')">inp:file</button>
+            <button class="emmet-btn" onclick="insertEmmet('input:submit')">inp:sub</button>
+            <button class="emmet-btn" onclick="insertEmmet('button')">button</button>
+            <button class="emmet-btn" onclick="insertEmmet('textarea')">textarea</button>
+            <button class="emmet-btn" onclick="insertEmmet('select')">select</button>
+            <button class="emmet-btn" onclick="insertEmmet('option')">option</button>
+            <button class="emmet-btn" onclick="insertEmmet('label')">label</button>
+            <button class="emmet-btn" onclick="insertEmmet('fieldset')">fieldset</button>
+            <button class="emmet-btn" onclick="insertEmmet('legend')">legend</button>
+
+            <div class="section-title">Tableau</div>
+            <button class="emmet-btn" onclick="insertEmmet('table')">table</button>
+            <button class="emmet-btn" onclick="insertEmmet('thead')">thead</button>
+            <button class="emmet-btn" onclick="insertEmmet('tbody')">tbody</button>
+            <button class="emmet-btn" onclick="insertEmmet('tr')">tr</button>
+            <button class="emmet-btn" onclick="insertEmmet('th')">th</button>
+            <button class="emmet-btn" onclick="insertEmmet('td')">td</button>
+
+            <div class="section-title">Liens</div>
+            <button class="emmet-btn" onclick="insertEmmet('a')">a</button>
+            <button class="emmet-btn" onclick="insertEmmet('a:blank')">a:blank</button>
+            <button class="emmet-btn" onclick="insertEmmet('link')">link</button>
+            <button class="emmet-btn" onclick="insertEmmet('script')">script</button>
+            <button class="emmet-btn" onclick="insertEmmet('script:src')">scr:src</button>
+            <button class="emmet-btn" onclick="insertEmmet('style')">style</button>
+            <button class="emmet-btn" onclick="insertEmmet('meta')">meta</button>
+            <button class="emmet-btn" onclick="insertEmmet('meta:vp')">meta:vp</button>
+
+            <div class="section-title">Avancé</div>
+            <button class="emmet-btn" onclick="insertEmmet('div.container')">div.cont</button>
+            <button class="emmet-btn" onclick="insertEmmet('ul>li*3')">ul>li*3</button>
+            <button class="emmet-btn" onclick="insertEmmet('div#id')">div#id</button>
+            <button class="emmet-btn" onclick="insertEmmet('div.class')">div.cls</button>
+            <button class="emmet-btn" onclick="insertEmmet('p{text}')">p{txt}</button>
+            <button class="emmet-btn" onclick="insertEmmet('details')">details</button>
+            <button class="emmet-btn" onclick="insertEmmet('summary')">summary</button>
+            <button class="emmet-btn" onclick="insertEmmet('dialog')">dialog</button>
+            <button class="emmet-btn" onclick="insertEmmet('template')">template</button>
+            <button class="emmet-btn" onclick="insertEmmet('slot')">slot</button>
+        </div>
+
+        <!-- EDITOR -->
+        <div id="editor-zone">
+            <textarea
+                id="editor"
+                placeholder="Écris ton HTML ici... ✨"
+                spellcheck="false"
+                autocorrect="off"
+                autocapitalize="off"
+                autocomplete="off"
+                data-gramm="false"
+            ></textarea>
+        </div>
+
+        <!-- PREVIEW -->
+        <div id="preview-zone">
+            <div id="preview-topbar">
+                <span>🌐 Aperçu</span>
+                <span id="preview-status">Prêt</span>
+            </div>
+            <iframe id="preview-frame"></iframe>
+        </div>
+
+    </div>
+
+    <!-- BOTTOMBAR -->
+    <div id="bottombar">
+        <button onclick="runCode()">▶ Exécuter</button>
+        <button onclick="clearCode()">🗑 Effacer</button>
+        <button onclick="copyCode()">📋 Copier</button>
+    </div>
+
+    <script>
+        const editor = document.getElementById('editor');
+        const previewFrame = document.getElementById('preview-frame');
+        const previewZone = document.getElementById('preview-zone');
+
+        // =====================
+        // SERVICE WORKER
+        // =====================
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('./sw.js').then(() => {
+                console.log('✅ Service Worker enregistré !');
+            });
+        }
+
+        // =====================
+        // PWA INSTALL
+        // =====================
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('install-banner').style.display = 'flex';
+        });
+
+        function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt.userChoice.then(() => {
+                    deferredPrompt = null;
+                    document.getElementById('install-banner').style.display = 'none';
+                });
+            }
+        }
+
+        // =====================
+        // EMMET SNIPPETS
+        // =====================
+        const emmetSnippets = {
+            '!': `<!DOCTYPE html>\n<html lang="fr">\n<head>\n    <meta charset="UTF-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1.0">\n    <title>Document</title>\n</head>\n<body>\n    \n</body>\n</html>`,
+            'html': `<html lang="fr">\n    \n</html>`,
+            'head': `<head>\n    <meta charset="UTF-8">\n    <title>Document</title>\n</head>`,
+            'body': `<body>\n    \n</body>`,
+            'h1': `<h1></h1>`,
+            'h2': `<h2></h2>`,
+            'h3': `<h3></h3>`,
+            'p': `<p></p>`,
+            'span': `<span></span>`,
+            'strong': `<strong></strong>`,
+            'em': `<em></em>`,
+            'div': `<div>\n    \n</div>`,
+            'section': `<section>\n    \n</section>`,
+            'article': `<article>\n    \n</article>`,
+            'header': `<header>\n    \n</header>`,
+            'footer': `<footer>\n    \n</footer>`,
+            'nav': `<nav>\n    \n</nav>`,
+            'main': `<main>\n    \n</main>`,
+            'aside': `<aside>\n    \n</aside>`,
+            'ul': `<ul>\n    <li></li>\n    <li></li>\n    <li></li>\n</ul>`,
+            'ol': `<ol>\n    <li></li>\n    <li></li>\n    <li></li>\n</ol>`,
+            'li': `<li></li>`,
+            'dl': `<dl>\n    <dt></dt>\n    <dd></dd>\n</dl>`,
+            'dt': `<dt></dt>`,
+            'dd': `<dd></dd>`,
+            'img': `<img src="" alt="" />`,
+            'video': `<video controls>\n    <source src="" type="video/mp4">\n</video>`,
+            'audio': `<audio controls>\n    <source src="" type="audio/mpeg">\n</audio>`,
+            'figure': `<figure>\n    <img src="" alt="">\n    <figcaption></figcaption>\n</figure>`,
+            'figcaption': `<figcaption></figcaption>`,
+            'iframe': `<iframe src="" width="600" height="400" frameborder="0"></iframe>`,
+            'canvas': `<canvas width="500" height="300"></canvas>`,
+            'svg': `<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">\n    \n</svg>`,
+            'form': `<form action="" method="post">\n    \n</form>`,
+            'input': `<input type="text" name="" />`,
+            'input:text': `<input type="text" name="" placeholder="" />`,
+            'input:email': `<input type="email" name="" placeholder="email@example.com" />`,
+            'input:password': `<input type="password" name="" placeholder="Mot de passe" />`,
+            'input:checkbox': `<input type="checkbox" name="" id="" /> <label for=""></label>`,
+            'input:radio': `<input type="radio" name="" id="" value="" /> <label for=""></label>`,
+            'input:file': `<input type="file" name="" />`,
+            'input:submit': `<input type="submit" value="Envoyer" />`,
+            'button': `<button type="button"></button>`,
+            'textarea': `<textarea name="" rows="4" cols="50"></textarea>`,
+            'select': `<select name="">\n    <option value=""></option>\n</select>`,
+            'option': `<option value=""></option>`,
+            'label': `<label for=""></label>`,
+            'fieldset': `<fieldset>\n    <legend></legend>\n    \n</fieldset>`,
+            'legend': `<legend></legend>`,
+            'table': `<table>\n    <thead>\n        <tr>\n            <th></th>\n        </tr>\n    </thead>\n    <tbody>\n        <tr>\n            <td></td>\n        </tr>\n    </tbody>\n</table>`,
+            'thead': `<thead>\n    <tr>\n        <th></th>\n    </tr>\n</thead>`,
+            'tbody': `<tbody>\n    <tr>\n        <td></td>\n    </tr>\n</tbody>`,
+            'tr': `<tr>\n    <td></td>\n</tr>`,
+            'th': `<th></th>`,
+            'td': `<td></td>`,
+            'a': `<a href=""></a>`,
+            'a:blank': `<a href="" target="_blank" rel="noopener noreferrer"></a>`,
+            'link': `<link rel="stylesheet" href="style.css" />`,
+            'script': `<script>\n    \n<\/script>`,
+            'script:src': `<script src=""><\/script>`,
+            'style': `<style>\n    \n</style>`,
+            'meta': `<meta name="" content="" />`,
+            'meta:vp': `<meta name="viewport" content="width=device-width, initial-scale=1.0" />`,
+            'div.container': `<div class="container">\n    \n</div>`,
+            'ul>li*3': `<ul>\n    <li></li>\n    <li></li>\n    <li></li>\n</ul>`,
+            'div#id': `<div id="monId">\n    \n</div>`,
+            'div.class': `<div class="maClasse">\n    \n</div>`,
+            'p{text}': `<p>Ton texte ici</p>`,
+            'details': `<details>\n    <summary></summary>\n    \n</details>`,
+            'summary': `<summary></summary>`,
+            'dialog': `<dialog id="">\n    <p></p>\n    <button onclick="this.closest('dialog').close()">Fermer</button>\n</dialog>`,
+            'template': `<template>\n    \n</template>`,
+            'slot': `<slot name=""></slot>`,
+        };
+
+        function insertEmmet(key) {
+            const snippet = emmetSnippets[key];
+            if (!snippet) return;
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            const before = editor.value.substring(0, start);
+            const after = editor.value.substring(end);
+            editor.value = before + snippet + after;
+            const cursorPos = before.length + snippet.length;
+            editor.selectionStart = cursorPos;
+            editor.selectionEnd = cursorPos;
+            editor.focus();
+        }
+
+        function switchTab(mode) {
+            const tabs = document.querySelectorAll('.tab');
+            if (mode === 'editor') {
+                previewZone.classList.remove('visible');
+                tabs[0].classList.add('active');
+                tabs[1].classList.remove('active');
+            } else {
+                previewZone.classList.add('visible');
+                tabs[1].classList.add('active');
+                tabs[0].classList.remove('active');
+                runCode();
+            }
+        }
+
+        function runCode() {
+            const code = editor.value;
+            const doc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+            doc.open();
+            doc.write(code);
+            doc.close();
+            document.getElementById('preview-status').textContent = '✅ Exécuté';
+            setTimeout(() => {
+                document.getElementById('preview-status').textContent = 'Prêt';
+            }, 2000);
+            if (!previewZone.classList.contains('visible')) {
+                previewZone.classList.add('visible');
+                document.querySelectorAll('.tab')[1].classList.add('active');
+                document.querySelectorAll('.tab')[0].classList.remove('active');
+            }
+        }
+
+        function clearCode() {
+            if (confirm('Effacer tout le code ?')) {
+                editor.value = '';
+                const doc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+                doc.open(); doc.write(''); doc.close();
+            }
+        }
+
+        function copyCode() {
+            navigator.clipboard.writeText(editor.value).then(() => {
+                alert('✅ Code copié !');
+            });
+        }
+    </script>
+
+</body>
+</html>
